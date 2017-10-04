@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="workbook">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Mini Workbook</title>
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Fonts -->
+    <!-- <link href="css/font-awesome.min.css" rel="stylesheet" type="text/css"> -->
+    <!-- jQuery -->
+    <script src="js/jquery.min.js"></script>
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+    <!-- Metis Menu Plugin JavaScript -->
+    <script src="js/metismenu.min.js"></script>
+    <!-- Angular JS -->
+    <script src="js/angular.min.js" type="text/javascript"></script>
+    <!-- Workbook JS -->
+    <script src="js/workbook.js"></script>
+    <script>
+    // Custom Theme JavaScript 
+        $(function() {
+    $('#side-menu').metisMenu();
+	});
+
+//Loads the correct sidebar on window load,
+//collapses the sidebar on window resize.
+// Sets the min-height of #page-wrapper to window size
+	$(function() {
+		$(window).bind("load resize", function() {
+			topOffset = 50;
+			width = (this.window.innerWidth > 0) ? this.window.innerWidth : this.screen.width;
+			if (width < 768) {
+            $('div.navbar-collapse').addClass('collapse');
+            topOffset = 100; // 2-row-menu
+			} else {
+				$('div.navbar-collapse').removeClass('collapse');
+			}
+
+			height = ((this.window.innerHeight > 0) ? this.window.innerHeight : this.screen.height) - 1;
+			height = height - topOffset;
+			if (height < 1) height = 1;
+			if (height > topOffset) {
+				$("#page-wrapper").css("min-height", (height) + "px");
+			}
+		});
+
+		var url = window.location;
+		var element = $('ul.nav a').filter(function() {
+        return this.href == url || url.href.indexOf(this.href) == 0;
+		}).addClass('active').parent().parent().addClass('in').parent();
+		if (element.is('li')) {
+			element.addClass('active');
+		}
+	});
+    </script>
+    <style>
+         #page-wrapper {
+            margin: 0 !important;
+        }
+        .ArrowSign {
+            cursor: pointer;
+        }
+        .nav>li>a{
+            padding:9px 10px;
+            font-weight: bold;
+            font-size: 15px;              
+        }
+        .table>thead>tr>th{
+            padding:3px 10px;
+            font-weight:bold;            
+            text-align: left;                      
+            border: 0.5px solid #ddd;
+        }
+        .table>tbody>tr:nth-child(even){
+            background-color: #f2f2f2;   
+        }
+        .table>tbody>tr>td {
+            text-align: left;
+            padding: 2px 10px;
+            font-size:small;
+            border: 0.5px solid #ddd;
+        }        
+        .scroll {
+            height: 150px;
+            overflow: auto;
+        }
+		.label{
+            padding:9px 10px;
+            font-weight: bold;
+            font-size: 15px;              
+        }
+    </style>
+</head>
+<body ng-controller="workbookcontroller" ng-init="fn_GetListMIDAS()">
+    <div id="wrapper">
+        <!-- <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0"> -->
+
+        <!-- </nav> -->
+        <div id="page-wrapper">
+            <div class="row">
+                <div class="col-lg-12">
+                    <!-- <div class="panel panel-default">                      -->
+                        <!-- <div class="panel-body"> -->
+                            <ul class="nav nav-tabs">
+                                <li class="active">
+                                    <a href="#midasTab" data-toggle="tab" ng-click="fn_SetTablename(1)">MIDAS</a>
+                                </li>
+                                <li>
+                                    <a href="#ffmExtractTab" data-toggle="tab" ng-click="fn_SetTablename(2)">FFM EXTRACT</a>
+                                </li>
+                                <li>
+                                    <a href="#rcnoTab" data-toggle="tab" ng-click="fn_SetTablename(3)">RCNO</a>
+                                </li>
+                                <!-- <li> -->
+                                    <!-- <a href="#ViewAll" data-toggle="tab" ng-click="fn_SetTablename(4)">View All</a> -->
+                                <!-- </li> -->
+                            </ul>
+
+                            <div class="tab-content">
+                                <div class="tab-pane fade in active" id="midasTab">
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <div class="panel panel-default scroll">
+                                                <!-- <div class="panel-body"> -->
+                                                    <div ng-if="noMidasDataFlag">
+                                                        <label>NO MIDAS DATA FOUND</label>
+                                                    </div>
+                                                    <div class="table-bordered" ng-if="!noMidasDataFlag">
+                                                        <table class="table" id="MIDAS">
+                                                            <thead>
+                                                                <tr>
+                                                                   <th ng-click="changeSorting(ApplicationID)" class="ArrowSign">APPID</th>
+                                                                    <th ng-click="changeSorting(PolicyID)" class="ArrowSign">POLICY</th>
+                                                                    <th ng-click="changeSorting(PLCY_STRT_DT)" class="ArrowSign">STARTDATE</th>
+                                                                    <th ng-click="changeSorting(PLCY_TRMNTN_DT)" class="ArrowSign">ENDDATE</th>
+                                                                    <th ng-click="changeSorting(RCPNT_1ST_NAME)" class="ArrowSign">FIRST</th>
+                                                                    <th ng-click="changeSorting(RCPNT_LAST_NAME)" class="ArrowSign">LAST</th>
+                                                                    <th ng-click="changeSorting(ANN_APTC_AMT)" class="ArrowSign">APTC</th>
+                                                                    <th ng-click="changeSorting(ANN_PLCY_PRM_AMT)" class="ArrowSign">PREMIUM</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="success" ng-repeat="item in MIDAS|orderBy:sort.column:sort.descending">
+                                                                    <td>{{item.ApplicationID}}</td>
+                                                                    <td>{{item.PolicyID}}</td>
+                                                                    <td>{{item.PLCY_STRT_DT | date : "MM-dd-yyyy"}}</td>
+                                                                    <td>{{item.PLCY_TRMNTN_DT | date : "MM-dd-yyyy"}}</td>
+                                                                    <td>{{item.RCPNT_1ST_NAME}}</td>
+                                                                    <td>{{item.RCPNT_LAST_NAME}}</td>
+                                                                    <td>${{item.ANN_APTC_AMT}}</td>
+                                                                    <td>${{item.ANN_PLCY_PRM_AMT}}</td>
+                                                                </tr>
+
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <!-- /.table-bordered -->
+                                                <!-- </div> -->
+                                                <!-- /.panel-body -->
+                                            </div>
+                                            <!-- /.panel -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="ffmExtractTab">
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <div class="panel panel-default">
+                                                <!-- <div class="panel-body"> -->
+                                                    <div ng-if="noFfmDataFlag">
+                                                        <label>NO FFM EXTRACT DATA FOUND</label>
+                                                    </div>
+                                                    <div class="table-bordered" ng-if="!noFfmDataFlag">
+                                                        <table class="table" id="FFMEXTRACT">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th ng-click="changeSorting(ApplicationID)" class="ArrowSign">APPID</th>
+                                                                    <th ng-click="changeSorting(PLAN_EXCHG_ASGNED_PLCY_NUM)" class="ArrowSign">POLICY</th>
+                                                                    <th ng-click="changeSorting(PLAN_BNFT_STRT_DT)" class="ArrowSign">STARTDATE</th>
+                                                                    <th ng-click="changeSorting(PLAN_BNFT_END_DT)" class="ArrowSign">ENDDATE</th>
+                                                                    <th ng-click="changeSorting(PRSN_1ST_NAME)" class="ArrowSign">FIRST</th>
+                                                                    <th ng-click="changeSorting(PRSN_LAST_NAME)" class="ArrowSign">LAST</th>
+                                                                    <th ng-click="changeSorting(PLCY_APTC_AMT)" class="ArrowSign">APTC</th>
+                                                                    <th ng-click="changeSorting(PLCY_TOT_PRM_AMT)" class="ArrowSign">PREMIUM</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="success" ng-repeat="fitem in FFMS|orderBy:sort.column:sort.descending">
+                                                                    <td>{{fitem.ApplicationID}}</td>
+                                                                    <td>{{fitem.PLAN_EXCHG_ASGNED_PLCY_NUM}}</td>
+                                                                    <td>{{fitem.PLAN_BNFT_STRT_DT | date : "MM-dd-yyyy"}}</td>
+                                                                    <td>{{fitem.PLAN_BNFT_END_DT | date : "MM-dd-yyyy"}}</td>
+                                                                    <td>{{fitem.PRSN_1ST_NAME}}</td>
+                                                                    <td>{{fitem.PRSN_LAST_NAME}}</td>
+                                                                    <td>${{fitem.PLCY_APTC_AMT}}</td>
+                                                                    <td>${{fitem.PLCY_TOT_PRM_AMT}}</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <!-- /.table-bordered -->
+                                                <!-- </div> -->
+                                                <!-- /.panel-body -->
+                                            </div>
+                                            <!-- /.panel -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="rcnoTab">
+                                    <div class="row">
+                                        <div class="col-lg-12">
+                                            <div class="panel panel-default">
+                                                <!-- <div class="panel-body"> -->
+                                                    <div ng-if="noRcnoDataFlag">
+                                                        <label>NO RCNO DATA FOUND</label>
+                                                    </div>
+                                                    <div class="table-bordered" ng-if="!noRcnoDataFlag">
+                                                        <table class="table" id="RCNO">
+                                                            <thead>
+                                                                <tr>
+                                                                   <!-- <th ng-click="changeSorting(ApplicationID)" class="ArrowSign">APPLICATION ID</th> -->
+                                                                    <th ng-click="changeSorting(FFM_PLAN_EXCHG_ASG_PLCY_NUM)" class="ArrowSign">POLICY</th>
+                                                                    <th ng-click="changeSorting(FFM_PLAN_BNFT_STRT_DT)" class="ArrowSign">START DATE</th>
+                                                                    <th ng-click="changeSorting(FFM_PLAN_BNFT_END_DT)" class="ArrowSign">END DATE</th>
+                                                                    <th ng-click="changeSorting(FFM_PRSN_1ST_NAME)" class="ArrowSign">FIRST</th>
+                                                                    <th ng-click="changeSorting(FFM_PRSN_LAST_NAME)" class="ArrowSign">LAST</th>
+                                                                    <th ng-click="changeSorting(FFM_PLCY_APTC_AMT)" class="ArrowSign">APTC</th>
+                                                                    <th ng-click="changeSorting(FFM_PLCY_TOT_PRM_AMT)" class="ArrowSign">PREMIUM</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr class="success" ng-repeat="item in RCNO|orderBy:sort.column:sort.descending">
+                                                                    <!-- <td>{{item.ApplicationID}}</td> -->
+                                                                    <td>{{item.PLAN_EXCHG_ASGNED_PLCY_NUM}}</td>
+                                                                    <td>{{item.PLAN_BNFT_STRT_DT | date : "MM-dd-yyyy"}}</td>
+                                                                    <td>{{item.PLAN_BNFT_END_DT | date : "MM-dd-yyyy"}}</td>
+                                                                    <td>{{item.PRSN_1ST_NAME}}</td>
+                                                                    <td>{{item.PRSN_LAST_NAME}}</td>
+                                                                    <td>${{item.PLCY_APTC_AMT}}</td>
+                                                                    <td>${{item.PLCY_TOT_PRM_AMT}}</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <!-- /.table-bordered -->
+                                                <!-- </div> -->
+                                                <!-- /.panel-body -->
+                                            </div>
+                                            <!-- /.panel -->
+                                        </div>
+                                    </div>
+                                </div>
+                            <!-- </div> -->
+                        <!-- </div> -->
+                        <!-- /.panel-body -->
+                    </div>
+                    <!-- /.panel -->
+                </div>
+                <!-- /.col-lg-6 -->
+                <!-- /.col-lg-6 -->
+            </div>
+        </div>
+    </div>    
+</body>
+</html>
